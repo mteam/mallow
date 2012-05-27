@@ -22,7 +22,19 @@
         define(require, module, module.exports);
       },
 
+      normalize: function (name) {
+        if (mallow.modules[name] != null) {
+          return name;
+        } else if (mallow.modules[name + '/index'] != null) {
+          return name + '/index';
+        } else {
+          return name;
+        }
+      },
+
       get: function (name) {
+        name = mallow.normalize(name);
+        
         if (mallow.cache[name] == null) {
           mallow.init(name);
         }
