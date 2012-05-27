@@ -1,4 +1,7 @@
 app = require("express").createServer()
-mallow = require("../lib").middleware
+config = require("./config")
+mallow = require("../lib") config
 
-app.use mallow require("./config"), '/scripts/'
+app.get '/scripts/app.js', mallow['app.js'].server
+
+app.listen 3000
