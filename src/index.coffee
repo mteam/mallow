@@ -1,4 +1,5 @@
 Package = require "./package"
+compilers = require "./compilers"
 
 module.exports = (fn) ->
 	packages = {}
@@ -8,3 +9,5 @@ module.exports = (fn) ->
 		fn.apply add: pkg.add
 
 	packages
+
+module.exports.compilers = compilers
