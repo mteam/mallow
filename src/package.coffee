@@ -64,7 +64,7 @@ class Package
 		ext = extname(file)[1..-1]
 		compilers[ext]() or compilers['*']()
 
-	template: ejs.compile fs.readFileSync(__dirname + '/package.ejs').toString()
+	template: ejs.compile fs.readFileSync(__dirname + '/../assets/package.ejs').toString()
 
 	join: (modules) ->
 		@template {modules}
