@@ -26,27 +26,27 @@ class Package
 
 		walk = (path, prefix, cb) =>
 
-			async.waterfall [
-				(cb) -> fs.readdir path, cb
-				(files, cb) -> cb null, file for file in files
-				(file, cb) ->
-					fullPath = joinPath path, file
-					fs.stat fullPath, (err, stats) ->
-						cb err, file, stats
-				(file, stats, cb) =>
+			fs.readdir path, (err, files) =>
+				cb err if err
+
+				async.forEach files, (file, cb) =>
 					fullPath = joinPath path, file
 					module = joinPath prefix, basename(file, extname(file))
 
-					if stats.isDirectory()
-						walk fullPath, module, cb
+					fs.stat fullPath, (err, stats) =>
+						cb err if err
 
-					else if stats.isFile()
-						@compileModule module, fullPath, (err, output) ->
-							cb err if err
-							modules[module] = output
-							cb null
+						if stats.isDirectory()
+							walk fullPath, module, cb
 
-			], (err) -> cb err
+						else if stats.isFile()
+							@compileModule module, fullPath, (err, output) ->
+								cb err if err
+								modules[module] = output
+								cb null
+
+				, cb
+
 
 		walk path, prefix, (err) ->
 			cb err, modules
