@@ -1,4 +1,4 @@
 coffee = require "coffee-script"
 
-module.exports = (input) ->
-	coffee.compile input, bare: true
+module.exports = (input, filename) ->
+	coffee.compile input, bare: true, filename: filename

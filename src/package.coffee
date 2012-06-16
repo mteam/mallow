@@ -17,7 +17,7 @@ class Package
 
 	compile: (cb) ->
 		async.map @paths, @compileDir, (err, modules) =>
-			cb err if err
+			return cb err if err
 			modules = _.extend {}, modules...
 			cb null, @join modules
 
@@ -27,21 +27,21 @@ class Package
 		walk = (path, prefix, cb) =>
 
 			fs.readdir path, (err, files) =>
-				cb err if err
+				return cb err if err
 
 				async.forEach files, (file, cb) =>
 					fullPath = joinPath path, file
 					module = joinPath prefix, basename(file, extname(file))
 
 					fs.stat fullPath, (err, stats) =>
-						cb err if err
+						return cb err if err
 
 						if stats.isDirectory()
 							walk fullPath, module, cb
 
 						else if stats.isFile()
 							@compileModule module, fullPath, (err, output) ->
-								cb err if err
+								return cb err if err
 								modules[module] = output
 								cb null
 
@@ -53,28 +53,29 @@ class Package
 		
 	compileModule: (name, file, cb) ->
 		fs.readFile file, (err, source) =>
-			cb err if err
+			return cb err if err
 
 			compile = @getCompiler file
-			output = compile source.toString()
 
-			cb null, output
+			try
+				output = compile source.toString(), file
+				cb null, output
+			catch err
+				cb err
 
 	getCompiler: (file) ->
 		ext = extname(file)[1..-1]
-		compilers[ext]() or compilers['*']()
+		compilers[ext]?() or compilers['*']()
 
 	template: ejs.compile fs.readFileSync(__dirname + '/../assets/package.ejs').toString()
 
 	join: (modules) ->
 		@template {modules}
 	
-	server: (req, res) =>
+	server: (req, res, next) =>
 		@compile (err, source) ->
 			if err
-				console.log err
-				res.writeHead 500, 'Content-Type': 'text/plain'
-				res.end err
+				next err
 			else
 				res.writeHead 200, 'Content-Type': 'application/javascript'
 				res.end source
