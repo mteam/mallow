@@ -75,7 +75,8 @@ class Package
 	server: (req, res, next) =>
 		@compile (err, source) ->
 			if err
-				next err
+				if next? then next err
+				else throw err
 			else
 				res.writeHead 200, 'Content-Type': 'application/javascript'
 				res.end source
