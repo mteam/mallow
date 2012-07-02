@@ -1,18 +1,12 @@
 fs = require 'fs'
 http = require 'http'
-Package = require '../package'
+mallow = require '../index'
 
 server = (argv) ->
-  fs.readFile argv.config, (err, file) ->
-    throw err if err
+  pkg = mallow(argv.config)
 
-    json = JSON.parse(file)
-    pkg = new Package(json.name)
-
-    for file in json.files
-      pkg.add(path: file, prefix: json.name)
-
-    http.createServer(pkg.server).listen(argv.port)
+  http.createServer(pkg.server).listen(argv.port)
+  console.log("listening on 0.0.0.0:#{argv.port}")
 
 server.options =
   port:

@@ -1,31 +1,15 @@
 fs = require 'fs'
 async = require 'async'
-Package = require '../package'
+mallow = require '../index'
 
 build = (argv) ->
-  pkg = null
+  pkg = mallow(argv.config)
 
-  async.waterfall [
-
-    (cb) ->
-      fs.readFile(argv.config, cb)
-
-    (file, cb) ->
-      json = JSON.parse(file)
-      pkg = new Package(json.name)
-
-      for file in json.files
-        pkg.add(path: file, prefix: json.name)
-
-      pkg.compile(cb)
-
-    (compiled, cb) ->
-      output = argv.output or "./#{pkg.name}.js"
-      console.info('writing to', output)
-      fs.writeFile(output, compiled, cb)
-
-  ], (err) ->
+  pkg.compile (err, output) ->
     throw err if err
+    file = argv.output or "./#{pkg.name}.js"
+    console.info('writing to', file)
+    fs.writeFileSync(file, output)
 
 build.options =
   output:
