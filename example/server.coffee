@@ -1,11 +1,12 @@
-app = require("express").createServer()
-config = require("./config")
-mallow = require("../lib") config
-fs = require "fs"
+express = require('express')
+mallow = require('../lib')
 
-app.get '/', (req, res) ->
-	res.end fs.readFileSync __dirname + '/index.html'
+app = express()
+bundle = mallow.new(__dirname)
 
-app.get '/scripts/app.js', mallow['app.js'].server
+app.use express.static('public')
+app.use app.router
+
+app.get '/app.js', bundle.server
 
 app.listen 3000

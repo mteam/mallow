@@ -1,0 +1,7 @@
+{
+	"name": "mallow-example",
+	"directories": {
+		"source": "src",
+		"dependencies": "vendor"
+	}
+}
