@@ -24,7 +24,10 @@ class Package
     fs.readFile file, (err, contents) =>
       if err then return cb(err)
 
-      @json = JSON.parse(contents)
+      try
+        @json = JSON.parse(contents)
+      catch err
+        return cb("invalid package.json in #{@name}")
 
       if not @json.directories?
         return cb("no directories specified in #{@json.name}/package.json")

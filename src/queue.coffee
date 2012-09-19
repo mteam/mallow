@@ -14,15 +14,18 @@ class Queue
 
   invoke: (task, cb) =>
     console.log("#{task.name}")
-    task.fn.call this, (err) ->
+    task.fn.call this, (err) =>
       if err
-        console.error(err)
-        process.exit(1)
+        @stop(err)
       else
         cb()
 
   add: (name, fn) ->
     @queue.push {name, fn}
+
+  stop: (err) ->
+    @queue.concurrency = 0
+    @done?(err)
 
   compilePackage: (dir) ->  
     pkg = Package.new(dir)

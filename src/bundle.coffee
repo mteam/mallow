@@ -8,12 +8,14 @@ class Bundle
   constructor: () ->
     @packages = []
 
-  compile: (compiled) ->
+  compile: (cb) ->
     queue = Queue.new()
 
-    queue.done = ->
+    queue.done = (err) ->
+      if err then return cb(err)
+
       output = Bundle.template(modules: queue.modules)
-      compiled(output)
+      cb(null, output)
 
     for pkg in @packages
       queue.compilePackage(pkg)
@@ -22,9 +24,10 @@ class Bundle
     @packages.push(dir)
     
   server: (req, res, next) =>
-    @compile (output, err) ->
+    res.type('js')
+    
+    @compile (err, output) ->
       if err then return next(err)
-      res.type('js')
       res.end(output)
 
 module.exports = Bundle

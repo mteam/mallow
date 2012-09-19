@@ -22,9 +22,13 @@ exports.compile = (file, cb) ->
 
   if compiler?
     fs.readFile file, 'utf-8', (err, contents) ->
-      if err
-        cb(err)
-      else
-        cb(null, compiler(contents))
+      if err then return cb(err)
+      
+      try
+        output = compiler(contents, file)
+      catch err
+        return cb(err)
+
+      cb(null, output)
   else
     cb("no compiler found for #{file}")

@@ -6,6 +6,7 @@ bundle = mallow.new(__dirname)
 
 app.use express.static('public')
 app.use app.router
+app.use mallow.errorHandler
 
 app.get '/app.js', bundle.server
 
