@@ -1,5 +1,5 @@
 express = require('express')
-mallow = require('../lib')
+mallow = require('../src')
 
 app = express()
 bundle = mallow.new(__dirname)

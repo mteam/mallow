@@ -1,20 +1,16 @@
 {
-	"name": "mallow",
-	"version": "0.2.0",
-	"author": "Michal Miskernik <michal@miskernik.sk>",
-	"main": "./lib/index",
-	"bin": {
-		"mallow": "./bin/mallow"
-	},
-	"dependencies": {
-		"coffee-script": "1.3.x",
-		"underscore": "1.3.x",
-		"async": "0.1.x",
-		"ejs": "0.7.x",
-		"optimist": "0.3.x"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/MarshmallowTeam/mallow.git"
-	}
+  "name": "mallow",
+  "version": "0.2.0",
+  "author": "Michal Miskernik <michal@miskernik.sk>",
+  "main": "./lib/index",
+  "dependencies": {
+    "coffee-script": "1.3.x",
+    "async": "0.1.x",
+    "ejs": "0.7.x",
+    "glob": "~3.1.12"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MarshmallowTeam/mallow.git"
+  }
 }

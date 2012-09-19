@@ -1,84 +1,64 @@
-_ = require "underscore"
-async = require "async"
-fs = require "fs"
-{join: joinPath, basename, extname} = require "path"
-compilers = require "./compilers"
-ejs = require "ejs"
+fs = require 'fs'
+path = require 'path'
+glob = require 'glob'
+async = require 'async'
+compilers = require './compilers'
+
+exports.new = (dir) ->
+  new Package(dir)
 
 class Package
-	constructor: (@name) ->
-		@paths = []
+  constructor: (@dir) ->
+    @name = path.basename(@dir)
 
-	add: (options) =>
-		if _.isString options
-			@paths.push path: options, prefix: ''
-		else
-			@paths.push _.pick options, 'path', 'prefix'
+  compile: (queue, cb) ->
+    async.series [
+      (cb) => @readPackageJson(cb)
+      (cb) => @loadDependencies(queue, cb)
+      (cb) => @compileModules(queue, cb)
+    ], cb
 
-	compile: (cb) ->
-		async.map @paths, @compileDir, (err, modules) =>
-			return cb err if err
-			modules = _.extend {}, modules...
-			cb null, @join modules
+  readPackageJson: (cb) ->
+    file = path.join(@dir, 'package.json')
 
-	compileDir: ({path, prefix}, cb) =>
-		modules = {}
+    fs.readFile file, (err, contents) =>
+      if err then return cb(err)
 
-		walk = (path, prefix, cb) =>
+      @json = JSON.parse(contents)
 
-			fs.readdir path, (err, files) =>
-				return cb err if err
+      if not @json.directories?
+        return cb("no directories specified in #{@json.name}/package.json")
+      
+      if not @json.directories.source?
+        return cb("no source directory specified in #{@json.name}/package.json")
 
-				async.forEach files, (file, cb) =>
-					fullPath = joinPath path, file
-					module = joinPath prefix, basename(file, extname(file))
+      @name = @json.name
+      @sources = path.join(@dir, @json.directories.source)
 
-					fs.stat fullPath, (err, stats) =>
-						return cb err if err
+      cb()
 
-						if stats.isDirectory()
-							walk fullPath, module, cb
+  loadDependencies: (queue, cb) ->
+    if not @json.directories.dependencies?
+      return cb()
 
-						else if stats.isFile()
-							@compileModule module, fullPath, (err, output) ->
-								return cb err if err
-								modules[module] = output
-								cb null
+    deps = @json.directories.dependencies
+    pattern = path.join(@dir, deps, '*', 'package.json')
 
-				, cb
+    glob pattern, (err, packages) ->
+      if err then return cb(err)
 
+      for package in packages
+        queue.compilePackage(path.dirname(package))
 
-		walk path, prefix, (err) ->
-			cb err, modules
-		
-	compileModule: (name, file, cb) ->
-		fs.readFile file, (err, source) =>
-			return cb err if err
+      cb()
 
-			compile = @getCompiler file
+  compileModules: (queue, cb) ->
+    pattern = path.join(@sources, '**', '*.*')
 
-			try
-				output = compile source.toString(), file
-				cb null, output
-			catch err
-				cb err
+    glob pattern, (err, modules) =>
+      if err then return cb(err)
 
-	getCompiler: (file) ->
-		ext = extname(file)[1..-1]
-		compilers[ext]?() or compilers['*']()
+      for file in modules when compilers.canCompile(file)
+        queue.compileModule(file, this)
 
-	template: ejs.compile fs.readFileSync(__dirname + '/../assets/package.ejs').toString()
-
-	join: (modules) ->
-		@template {modules}
-	
-	server: (req, res, next) =>
-		@compile (err, source) ->
-			if err
-				if next? then next err
-				else throw err
-			else
-				res.writeHead 200, 'Content-Type': 'application/javascript'
-				res.end source
-
-module.exports = Package
+      cb()
