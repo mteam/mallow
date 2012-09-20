@@ -12,11 +12,11 @@ class Package
     @name = path.basename(@dir)
 
   compile: (queue, cb) ->
-    async.series [
-      (cb) => @readPackageJson(cb)
-      (cb) => @loadDependencies(queue, cb)
-      (cb) => @compileModules(queue, cb)
-    ], cb
+    async.series([
+      @readPackageJson.bind(this),
+      @loadDependencies.bind(this, queue),
+      @compileModules.bind(this, queue)
+    ], cb)
 
   readPackageJson: (cb) ->
     file = path.join(@dir, 'package.json')
