@@ -18,5 +18,4 @@ class Module
         relative = path.relative(@package.sources, @file)
         ext = path.extname(@file)
         noext = relative[0...-ext.length]
-        path.join(@package.name, noext)
-
+        path.join(@package.name, noext).replace(/\\/g, '/')
