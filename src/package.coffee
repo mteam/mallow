@@ -50,8 +50,8 @@ class Package
     glob pattern, (err, packages) ->
       if err then return cb(err)
 
-      for package in packages
-        queue.compilePackage(path.dirname(package))
+      for pkg in packages
+        queue.compilePackage(path.dirname(pkg))
 
       cb()
 

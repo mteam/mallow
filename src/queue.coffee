@@ -33,8 +33,8 @@ class Queue
     @add "compile package #{pkg.name}", (cb) ->
       pkg.compile(this, cb)
 
-  compileModule: (file, package) ->
-    module = Module.new(file, package)
+  compileModule: (file, pkg) ->
+    module = Module.new(file, pkg)
     @modules.push(module)
 
     @add "compile module #{module.name}", (cb) ->
